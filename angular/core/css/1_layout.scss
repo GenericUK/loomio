@@ -5,7 +5,7 @@ body {
 
 .lmo-one-column-layout, .lmo-two-column-layout{
   margin: auto;
-  padding-bottom: 25px;
+  padding-bottom: 24px;
   z-index: 0;
   min-width: 320px;
 }
@@ -37,6 +37,7 @@ md-dialog {
   overflow-y: scroll;
   position: relative;
 }
+
 .lmo-main-background {
   position: absolute;
   width: 100%;
@@ -71,10 +72,10 @@ md-dialog {
   /* applied to small screens, e.g. portrait tablet */
 
   .lmo-thread-column-left{
-    padding: 0 10px;
+    padding: 0 16px;
   }
   .lmo-thread-column-right{
-    padding: 0 10px;
+    padding: 0 16px;
   }
 }
 
@@ -82,11 +83,11 @@ md-dialog {
   /* applied to medium screens, e.g. landscape tablet */
 
   /*
-    We want the right col to be min 320px + 10px padding.
+    We want the right col to be min 320px + 16px padding.
     The left col consumes the rest of the available space.
   */
 
-  $med-right-col-ratio: (320 + 10) / $small-max;
+  $med-right-col-ratio: (320 + 16) / $small-max;
   .lmo-thread-column-right {
     width: percentage($med-right-col-ratio);
   }
@@ -99,11 +100,11 @@ md-dialog {
   /* applied to large screens, e.g. desktop or laptop*/
 
   /*
-    We want the right col to be min 400px + 10px padding.
+    We want the right col to be min 400px + 16px padding.
     The left col consumes the rest of the available space.
   */
 
-  $large-right-col-ratio: (400 + 10) / $medium-max;
+  $large-right-col-ratio: (480 + 16) / $medium-max;
   .lmo-thread-column-right {
     width: percentage($large-right-col-ratio);
   }
@@ -128,7 +129,7 @@ md-dialog {
   .lmo-group-column-left{
     width: percentage(2/3);
     float: left;
-    padding-right: 10px;
+    padding-right: 16px;
   }
 
   .lmo-group-column-right{
@@ -137,12 +138,12 @@ md-dialog {
   }
 
   .lmo-thread-column-right {
-    padding: 0 10px 0 0;
+    padding: 0 16px 0 0;
     float: right;
     clear: right;
   }
   .lmo-thread-column-left {
-    padding: 0 10px 0 10px;
+    padding: 0 16px 0 16px;
     float: left;
     clear: left;
   }

@@ -3,6 +3,14 @@
   .lmo-card-heading { margin-top: 7px; }
 }
 
+.context-panel__heading-container {
+  @include displayFlex;
+}
+
+.context-panel__thread-actions {
+  flex-shrink: 0;
+}
+
 .context-panel__thread-actions {
   margin-right: -10px;
 }

@@ -23,7 +23,7 @@ $medium-max:    992;
 $tiny-max-px:   $tiny-max   + px;
 $small-max-px:  $small-max  + px;
 $medium-max-px: $medium-max + px;
-$max-container-size: 1120px;
+$max-container-size: 1280px;
 
 $agree-color: #00d374;
 $abstain-color: #F6A82B;
@@ -239,8 +239,8 @@ $cardPaddingSize: 16px;
 @mixin lmoRow {
   @media (min-width: $tiny-max-px){
     /* outer padding on all but tiny screens */
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 }
 
