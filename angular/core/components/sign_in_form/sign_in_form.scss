@@ -14,6 +14,7 @@
   @include displayFlex;
   flex-wrap: wrap;
   -webkit-flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
 .sign-in-form__provider {
@@ -25,4 +26,5 @@
 
 .sign-in-form__provider button {
   width: 100%;
+  margin: 4px 16px 4px 0;
 }
