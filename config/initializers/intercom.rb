@@ -55,7 +55,7 @@ if Rails.application.secrets.intercom_app_id
     # A Proc that given a user returns an array of companies
     # that the user belongs to.
     #
-    config.user.company_association = Proc.new { |user| user.parent_groups.to_a }
+    config.user.company_association = Proc.new { |user| user.groups.parents_only.order("LOWER(name)").to_a }
     # config.user.company_association = Proc.new { |user| [user.company] }
 
     # == Current company method/variable

@@ -13,17 +13,12 @@ class User < ActiveRecord::Base
   attr_accessor :restricted
 
   validates :email, presence: true, uniqueness: true, email: true
-  #validates :name, presence: true
-  validates_inclusion_of :uses_markdown, in: [true,false]
 
-  has_many :stances, as: :participant
-
-  has_attached_file :uploaded_avatar,
-    styles: {
-      small:  "#{AVATAR_SIZES[:small]}x#{AVATAR_SIZES[:small]}#",
-      medium: "#{AVATAR_SIZES[:medium]}x#{AVATAR_SIZES[:medium]}#",
-      large:  "#{AVATAR_SIZES[:large]}x#{AVATAR_SIZES[:large]}#",
-    }
+  has_attached_file :uploaded_avatar, styles: {
+    small:  "#{AVATAR_SIZES[:small]}x#{AVATAR_SIZES[:small]}#",
+    medium: "#{AVATAR_SIZES[:medium]}x#{AVATAR_SIZES[:medium]}#",
+    large:  "#{AVATAR_SIZES[:large]}x#{AVATAR_SIZES[:large]}#",
+  }
 
   validates_attachment :uploaded_avatar,
     size: { in: 0..MAX_AVATAR_IMAGE_SIZE_CONST.kilobytes },
@@ -38,11 +33,10 @@ class User < ActiveRecord::Base
   validates :password, nontrivial_password: true, allow_nil: true
 
   has_many :contacts, dependent: :destroy
-  has_many :admin_memberships,
-           -> { where('memberships.admin = ? AND memberships.is_suspended = ?', true, false) },
-           class_name: 'Membership',
-           dependent: :destroy
 
+  has_many :groups,
+           -> { where archived_at: nil },
+           through: :memberships
   has_many :adminable_groups,
            -> { where( archived_at: nil) },
            through: :admin_memberships,
@@ -52,38 +46,32 @@ class User < ActiveRecord::Base
   has_many :memberships,
            -> { where(is_suspended: false, archived_at: nil) },
            dependent: :destroy
-
   has_many :archived_memberships,
            -> { where('archived_at IS NOT NULL') },
            class_name: 'Membership'
-
-  has_many :membership_requests,
-           foreign_key: 'requestor_id',
+  has_many :admin_memberships,
+           -> { where('memberships.admin = ? AND memberships.is_suspended = ?', true, false) },
+           class_name: 'Membership',
            dependent: :destroy
 
-  has_many :groups,
-           -> { where archived_at: nil },
-           through: :memberships
+  has_many :membership_requests, foreign_key: :requestor_id, dependent: :destroy
 
-  has_many :discussions,
-           through: :groups
-
+  has_many :discussions, through: :groups
   has_many :authored_discussions,
            class_name: 'Discussion',
-           foreign_key: 'author_id',
+           foreign_key: :author_id,
            dependent: :destroy
 
-  has_many :motions,
-           through: :discussions
-
+  has_many :motions, through: :discussions
   has_many :authored_motions,
            class_name: 'Motion',
-           foreign_key: 'author_id',
+           foreign_key: :author_id,
            dependent: :destroy
 
   has_many :polls, foreign_key: :author_id
   has_many :communities, through: :polls, class_name: "Communities::Base"
   has_many :visitors, through: :communities
+  has_many :stances, as: :participant
 
   has_many :votes, dependent: :destroy
   has_many :comment_votes, dependent: :destroy
@@ -117,14 +105,10 @@ class User < ActiveRecord::Base
   scope :coordinators, -> { joins(:memberships).where('memberships.admin = ?', true).group('users.id') }
   scope :mentioned_in, ->(model) { where(id: model.notifications.user_mentions.pluck(:user_id)) }
 
-  # move to ThreadMailerQuery
-  scope :email_when_proposal_closing_soon, -> { active.where(email_when_proposal_closing_soon: true) }
-
-  scope :email_proposal_closing_soon_for, -> (group) {
-    active.
-    joins(:memberships).
-    where('memberships.group_id = ?', group.id).
-    where('users.email_when_proposal_closing_soon = ?', true)
+  scope :email_when_proposal_closing_soon, -> (group) {
+     active
+    .joins(:memberships)
+    .where("memberships.group_id": group.id, email_when_proposal_closing_soon: true)
   }
 
   def user_id
@@ -152,14 +136,10 @@ class User < ActiveRecord::Base
     @ability ||= Ability.new(self)
   end
 
-  delegate :can?, :cannot?, :to => :ability
+  delegate :can?, :cannot?, to: :ability
 
-  def is_group_admin?(group=nil)
-    if group.present?
-      admin_memberships.where(group_id: group.id).any?
-    else
-      admin_memberships.any?
-    end
+  def is_group_admin?
+    admin_memberships.any?
   end
 
   def is_member_of?(group)
@@ -170,41 +150,21 @@ class User < ActiveRecord::Base
     !!memberships.find_by(group_id: group&.id, admin: true)
   end
 
-  def time_zone_city
-    TimeZoneToCity.convert time_zone
-  end
-
   def time_zone
     self[:time_zone] || 'UTC'
   end
 
-  def group_membership(group)
-    memberships.for_group(group).first
-  end
-
   def self.find_by_email(email)
-    User.where('lower(email) = ?', email.to_s.downcase).first
+    User.find_by('lower(email) = ?', email.to_s.downcase)
   end
 
   def self.helper_bot
     find_by(email: helper_bot_email) ||
-    create!(email: helper_bot_email,
-            name: 'Loomio Helper Bot',
-            password: SecureRandom.hex(20),
-            uses_markdown: true,
-            avatar_kind: :gravatar)
+    create!(email: helper_bot_email, name: 'Loomio Helper Bot', avatar_kind: :gravatar)
   end
 
   def self.helper_bot_email
     ENV['HELPER_BOT_EMAIL'] || 'contact@loomio.org'
-  end
-
-  def subgroups
-    groups.where("parent_id IS NOT NULL")
-  end
-
-  def parent_groups
-    groups.where("parent_id IS NULL").order("LOWER(name)")
   end
 
   def name
@@ -220,7 +180,7 @@ class User < ActiveRecord::Base
     update_attributes(deactivated_at: Time.now, avatar_kind: "initials")
     memberships.update_all(archived_at: Time.now)
     Group.where(id: former_group_ids).map(&:update_memberships_count)
-    membership_requests.where("responded_at IS NULL").destroy_all
+    membership_requests.where(responded_at: nil).destroy_all
   end
 
   def reactivate!
