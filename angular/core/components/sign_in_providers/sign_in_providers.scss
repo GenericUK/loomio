@@ -1,0 +1,18 @@
+.sign-in-providers {
+  @include displayFlex;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.sign-in-providers__provider {
+  padding: 5px 0;
+  @include displayFlex;
+  flex-basis: 50%;
+  -webkit-flex-basis: 50%;
+}
+
+.sign-in-providers__provider button {
+  width: 100%;
+  margin: 4px 16px 4px 0;
+}

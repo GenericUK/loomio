@@ -1,0 +1,10 @@
+%md-dialog.poll-common-modal
+  .lmo-disabled-form{ng-show: "isDisabled"}
+
+  %md-toolbar
+    .md-toolbar-tools.lmo-flex__space-between
+      %h1.lmo-h1{translate: "sign_up_modal.title"}
+      %modal_header_cancel_button{ng-if: "!preventClose", aria-hidden: "true"}
+
+  %md-dialog-content.md-dialog-content
+    %sign_up_form{prevent-close: "preventClose"}
